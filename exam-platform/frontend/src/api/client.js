@@ -94,6 +94,15 @@ export const api = {
   getAttempt(attemptId) {
     return request(`/attempts/${attemptId}`);
   },
+  getActiveAttempt() {
+    return request('/attempts/active');
+  },
+  updateReviewFlags(attemptId, flaggedVariantIds) {
+    return request(`/attempts/${attemptId}/review-flags`, {
+      method: 'POST',
+      body: JSON.stringify({ flaggedVariantIds }),
+    });
+  },
   submitAnswer(attemptId, { variantId, selectedIndex, timeSpentSeconds }) {
     return request(`/attempts/${attemptId}/answer`, {
       method: 'POST',

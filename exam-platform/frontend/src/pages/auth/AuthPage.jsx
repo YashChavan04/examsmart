@@ -48,50 +48,116 @@ export default function AuthPage() {
   }
 
   return (
-    <div style={{ maxWidth: 460, margin: '40px auto', padding: '0 16px' }}>
-      <div className="card" style={{ padding: '30px 26px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>📝</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 24 }}>ExamSmart</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-            Smart Examination & Assessment Platform
+    <div style={{ maxWidth: 480, margin: '48px auto', padding: '0 16px' }} className="fade-in">
+      <div
+        className="card glass-panel"
+        style={{
+          padding: '36px 32px',
+          boxShadow: 'var(--shadow-lg)',
+          borderRadius: 20,
+          border: '1px solid var(--card-border-subtle)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Clean top accent bar */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            background: '#2563eb',
+          }}
+        />
+
+        {/* Brand Header */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              background: '#2563eb',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 24,
+              color: '#fff',
+              marginBottom: 14,
+            }}
+          >
+            🎓
+          </div>
+          <h2
+            style={{
+              margin: '0 0 6px',
+              fontSize: 25,
+              fontWeight: 800,
+              letterSpacing: '-0.5px',
+              color: '#0f172a',
+            }}
+          >
+            ExamSmart
+          </h2>
+          <p className="muted" style={{ margin: 0, fontSize: 13.5, fontWeight: 500, color: '#64748b' }}>
+            Smart Examination &amp; Assessment Platform
           </p>
         </div>
 
-        {/* Tab switch between Sign In and Register */}
-        <div style={{ display: 'flex', background: 'var(--border)', borderRadius: 10, padding: 4, marginBottom: 22 }}>
+        {/* Modern Segmented Control Tab */}
+        <div
+          style={{
+            display: 'flex',
+            background: '#f1f5f9',
+            borderRadius: 8,
+            padding: 4,
+            marginBottom: 24,
+            border: '1px solid #e2e8f0',
+          }}
+        >
           <button
             type="button"
-            onClick={() => { setIsRegister(false); setError(null); }}
+            onClick={() => {
+              setIsRegister(false);
+              setError(null);
+            }}
             style={{
               flex: 1,
-              padding: '8px 12px',
+              padding: '9px 14px',
               border: 'none',
-              borderRadius: 8,
-              fontWeight: !isRegister ? 600 : 400,
-              background: !isRegister ? 'var(--card)' : 'transparent',
-              color: !isRegister ? 'var(--text)' : 'var(--muted)',
+              borderRadius: 6,
+              fontWeight: !isRegister ? 700 : 500,
+              fontSize: 13.5,
+              background: !isRegister ? '#ffffff' : 'transparent',
+              color: !isRegister ? '#2563eb' : '#64748b',
               cursor: 'pointer',
-              boxShadow: !isRegister ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s',
+              boxShadow: !isRegister ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
             }}
           >
             Sign In
           </button>
           <button
             type="button"
-            onClick={() => { setIsRegister(true); setError(null); }}
+            onClick={() => {
+              setIsRegister(true);
+              setError(null);
+            }}
             style={{
               flex: 1,
-              padding: '8px 12px',
+              padding: '9px 14px',
               border: 'none',
-              borderRadius: 8,
-              fontWeight: isRegister ? 600 : 400,
-              background: isRegister ? 'var(--card)' : 'transparent',
-              color: isRegister ? 'var(--text)' : 'var(--muted)',
+              borderRadius: 6,
+              fontWeight: isRegister ? 700 : 500,
+              fontSize: 13.5,
+              background: isRegister ? '#ffffff' : 'transparent',
+              color: isRegister ? '#2563eb' : '#64748b',
               cursor: 'pointer',
-              boxShadow: isRegister ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s',
+              boxShadow: isRegister ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.15s ease',
             }}
           >
             Create Account
@@ -99,38 +165,47 @@ export default function AuthPage() {
         </div>
 
         {error && (
-          <div style={{
-            background: 'color-mix(in srgb, var(--danger) 12%, var(--card))',
-            color: 'var(--danger)',
-            border: '1px solid var(--danger)',
-            borderRadius: 8,
-            padding: '10px 14px',
-            fontSize: 13,
-            marginBottom: 16
-          }}>
-            {error}
+          <div
+            style={{
+              background: 'color-mix(in srgb, var(--danger) 10%, var(--card))',
+              color: 'var(--danger)',
+              border: '1.5px solid color-mix(in srgb, var(--danger) 30%, transparent)',
+              borderRadius: 12,
+              padding: '12px 16px',
+              fontSize: 13.5,
+              fontWeight: 500,
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span>⚠️</span>
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           {isRegister && (
-            <>
-              <label className="field-label">I am a</label>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-                <label style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  border: `2px solid ${role === 'STUDENT' ? 'var(--accent)' : 'var(--border)'}`,
-                  background: role === 'STUDENT' ? 'color-mix(in srgb, var(--accent) 8%, var(--bg))' : 'var(--bg)',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  fontSize: 13
-                }}>
+            <div className="fade-in">
+              <label className="field-label" style={{ marginTop: 0 }}>Select Your Role</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    padding: '14px 10px',
+                    borderRadius: 12,
+                    border: `2px solid ${role === 'STUDENT' ? 'var(--accent)' : 'var(--border)'}`,
+                    background: role === 'STUDENT' ? 'color-mix(in srgb, var(--accent) 10%, var(--card))' : 'var(--card)',
+                    cursor: 'pointer',
+                    boxShadow: role === 'STUDENT' ? '0 0 0 1px var(--accent)' : 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
                   <input
                     type="radio"
                     name="role"
@@ -139,22 +214,31 @@ export default function AuthPage() {
                     onChange={() => setRole('STUDENT')}
                     style={{ display: 'none' }}
                   />
-                  🎓 Student
+                  <span style={{ fontSize: 24 }}>🎓</span>
+                  <span style={{ fontWeight: 700, fontSize: 13.5, color: role === 'STUDENT' ? 'var(--accent)' : 'var(--text)' }}>
+                    Student
+                  </span>
+                  <span className="muted" style={{ fontSize: 11, textAlign: 'center' }}>
+                    Take exams & review
+                  </span>
                 </label>
-                <label style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                  border: `2px solid ${role === 'FACULTY' ? 'var(--accent)' : 'var(--border)'}`,
-                  background: role === 'FACULTY' ? 'color-mix(in srgb, var(--accent) 8%, var(--bg))' : 'var(--bg)',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  fontSize: 13
-                }}>
+
+                <label
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    padding: '14px 10px',
+                    borderRadius: 12,
+                    border: `2px solid ${role === 'FACULTY' ? 'var(--accent)' : 'var(--border)'}`,
+                    background: role === 'FACULTY' ? 'color-mix(in srgb, var(--accent) 10%, var(--card))' : 'var(--card)',
+                    cursor: 'pointer',
+                    boxShadow: role === 'FACULTY' ? '0 0 0 1px var(--accent)' : 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
                   <input
                     type="radio"
                     name="role"
@@ -163,75 +247,125 @@ export default function AuthPage() {
                     onChange={() => setRole('FACULTY')}
                     style={{ display: 'none' }}
                   />
-                  👩‍🏫 Faculty
+                  <span style={{ fontSize: 24 }}>👩‍🏫</span>
+                  <span style={{ fontWeight: 700, fontSize: 13.5, color: role === 'FACULTY' ? 'var(--accent)' : 'var(--text)' }}>
+                    Faculty
+                  </span>
+                  <span className="muted" style={{ fontSize: 11, textAlign: 'center' }}>
+                    Author & proctor exams
+                  </span>
                 </label>
               </div>
 
               <label className="field-label">Full Name</label>
-              <input
-                className="input"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Alex Johnson"
-                required
-              />
-            </>
+              <div style={{ position: 'relative', marginBottom: 14 }}>
+                <input
+                  className="input"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Alex Johnson"
+                  required
+                  style={{ paddingLeft: 14 }}
+                />
+              </div>
+            </div>
           )}
 
-          <label className="field-label">Email Address</label>
-          <input
-            className="input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@university.edu"
-            required
-          />
+          <label className="field-label" style={{ marginTop: isRegister ? 0 : 0 }}>Email Address</label>
+          <div style={{ position: 'relative', marginBottom: 14 }}>
+            <input
+              className="input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@institution.edu"
+              required
+              autoComplete="email"
+            />
+          </div>
 
           <label className="field-label">Password</label>
-          <input
-            className="input"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            minLength={6}
-          />
+          <div style={{ position: 'relative', marginBottom: 20 }}>
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              required
+              minLength={6}
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+            />
+          </div>
 
           <button
             className="primary"
             type="submit"
             disabled={loading}
-            style={{ width: '100%', marginTop: 20, padding: '12px' }}
+            style={{
+              width: '100%',
+              padding: '13px',
+              fontSize: 15,
+              fontWeight: 700,
+              boxShadow: 'var(--accent-glow)',
+            }}
           >
-            {loading ? 'Please wait…' : isRegister ? 'Create Account' : 'Sign In'}
+            {loading ? 'Authenticating…' : isRegister ? 'Create Account & Continue' : 'Sign In to Portal'}
           </button>
         </form>
 
-        <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--border)' }}>
-          <p className="muted" style={{ textAlign: 'center', fontSize: 12, marginBottom: 12 }}>
-            Demo Quick Login
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Demo Quick Login Section */}
+        <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: 'var(--muted)' }}>
+              ⚡ Instant Demo Access
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <button
               type="button"
               className="secondary"
-              style={{ fontSize: 12, padding: '8px 12px', textAlign: 'left' }}
+              style={{
+                fontSize: 12.5,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 8,
+                borderRadius: 10,
+              }}
               onClick={() => handleQuickLogin('student@test.com', 'password123', 'STUDENT')}
               disabled={loading}
             >
-              🎓 <strong>Test Student</strong> &middot; student@test.com
+              <span style={{ fontSize: 18 }}>🎓</span>
+              <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
+                <strong style={{ display: 'block', fontSize: 12.5 }}>Student Demo</strong>
+                <span className="muted" style={{ fontSize: 10.5 }}>student@test.com</span>
+              </div>
             </button>
+
             <button
               type="button"
               className="secondary"
-              style={{ fontSize: 12, padding: '8px 12px', textAlign: 'left' }}
+              style={{
+                fontSize: 12.5,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 8,
+                borderRadius: 10,
+              }}
               onClick={() => handleQuickLogin('faculty@test.com', 'password123', 'FACULTY')}
               disabled={loading}
             >
-              👩‍🏫 <strong>Test Faculty</strong> &middot; faculty@test.com
+              <span style={{ fontSize: 18 }}>👩‍🏫</span>
+              <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
+                <strong style={{ display: 'block', fontSize: 12.5 }}>Faculty Demo</strong>
+                <span className="muted" style={{ fontSize: 10.5 }}>faculty@test.com</span>
+              </div>
             </button>
           </div>
         </div>

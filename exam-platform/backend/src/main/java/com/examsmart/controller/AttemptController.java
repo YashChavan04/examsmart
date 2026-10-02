@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -116,7 +117,70 @@ public class AttemptController {
     }
 
     /**
-     * Get attempt details with server-side time verification and saved answers for resuming.
+     * Finds and returns the student's currently active in-progress exam attempt if one exists.
+     * Essential for the "Resume after disconnect" flow when a tab or browser is closed/crashed mid-exam.
+     */
+    @GetMapping("/active")
+    public ResponseEntity<AttemptDetailsResponse> getActiveAttempt(@AuthenticationPrincipal AuthenticatedUser authUser) {
+        if (authUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User must be authenticated");
+        }
+
+        Optional<ExamAttempt> activeOpt = attemptRepository.findFirstByStudentIdAndStatusOrderByStartedAtDesc(
+                authUser.getId(), "IN_PROGRESS"
+        );
+
+        if (activeOpt.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        ExamAttempt attempt = activeOpt.get();
+        Exam exam = attempt.getExam();
+        long elapsed = Duration.between(attempt.getStartedAt(), Instant.now()).getSeconds();
+        long remaining = Math.max(0, (long) exam.getDurationSeconds() - elapsed);
+
+        if (remaining <= 0) {
+            log.info("Active attempt {} timed out on resume. Auto-submitting.", attempt.getId());
+            autoSubmit(attempt, "AUTO_SUBMIT_TIMEOUT");
+            return ResponseEntity.noContent().build();
+        }
+
+        List<QuestionVariant> variants = variantRepository.findByExamAttemptIdOrderByQuestionOrderAsc(attempt.getId());
+        List<QuestionResponseDTO> questions = variants.stream().map(v -> {
+            List<String> optionStrings = parseOptions(v.getOptionsJson());
+            return new QuestionResponseDTO(v.getId(), v.getTemplate().getTopic(),
+                    v.getRenderedText(), optionStrings, v.getQuestionOrder());
+        }).collect(Collectors.toList());
+
+        List<StudentAnswer> answers = answerRepository.findByAttemptId(attempt.getId());
+        Map<String, Integer> savedAnswers = new HashMap<>();
+        for (StudentAnswer a : answers) {
+            if (a.getVariant() != null && a.getSelectedIndex() != null) {
+                savedAnswers.put(a.getVariant().getId().toString(), a.getSelectedIndex());
+            }
+        }
+
+        long flagCount = flagEventRepository.countByAttemptId(attempt.getId());
+        List<String> reviewFlags = parseReviewFlags(attempt.getReviewFlagsJson());
+
+        AttemptDetailsResponse response = new AttemptDetailsResponse(
+                attempt.getId(),
+                exam.getId(),
+                exam.getTitle(),
+                exam.getDurationSeconds(),
+                remaining,
+                attempt.getStatus(),
+                questions,
+                savedAnswers,
+                flagCount,
+                reviewFlags
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get attempt details with server-side time verification, saved answers, and review flags for resuming.
      */
     @GetMapping("/{attemptId}")
     public AttemptDetailsResponse getAttempt(
@@ -152,6 +216,7 @@ public class AttemptController {
         }
 
         long flagCount = flagEventRepository.countByAttemptId(attempt.getId());
+        List<String> reviewFlags = parseReviewFlags(attempt.getReviewFlagsJson());
 
         return new AttemptDetailsResponse(
                 attempt.getId(),
@@ -162,8 +227,31 @@ public class AttemptController {
                 attempt.getStatus(),
                 questions,
                 savedAnswers,
-                flagCount
+                flagCount,
+                reviewFlags
         );
+    }
+
+    /**
+     * Persists student flagged-for-review questions on the backend so they survive disconnects and browser restarts.
+     */
+    @PostMapping("/{attemptId}/review-flags")
+    public Map<String, Object> updateReviewFlags(
+            @PathVariable UUID attemptId,
+            @RequestBody UpdateReviewFlagsRequest request,
+            @AuthenticationPrincipal AuthenticatedUser authUser) {
+
+        ExamAttempt attempt = attemptRepository.findById(attemptId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attempt not found"));
+
+        List<String> flags = request.flaggedVariantIds() != null ? request.flaggedVariantIds() : List.of();
+        try {
+            attempt.setReviewFlagsJson(objectMapper.writeValueAsString(flags));
+        } catch (Exception e) {
+            attempt.setReviewFlagsJson("[]");
+        }
+        attemptRepository.save(attempt);
+        return Map.of("success", true, "reviewFlags", flags);
     }
 
     @PostMapping("/{attemptId}/answer")
@@ -188,6 +276,14 @@ public class AttemptController {
 
         QuestionVariant variant = variantRepository.findById(request.variantId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Variant not found"));
+
+        // If selectedIndex is null or negative, student cleared/deselected their answer
+        if (request.selectedIndex() == null || request.selectedIndex() < 0) {
+            answerRepository.findByAttemptIdAndVariantId(attempt.getId(), variant.getId())
+                    .ifPresent(answerRepository::delete);
+            progressWallService.broadcast(attempt.getExam().getId());
+            return;
+        }
 
         // Upsert student answer to avoid duplicate entries for the same variant
         StudentAnswer answer = answerRepository.findByAttemptIdAndVariantId(attempt.getId(), variant.getId())
@@ -285,6 +381,17 @@ public class AttemptController {
             return list.stream().map(String::valueOf).toList();
         } catch (Exception e) {
             return List.of(optionsJson.replaceAll("[\\[\\]\"]", "").split(","));
+        }
+    }
+
+    private List<String> parseReviewFlags(String reviewFlagsJson) {
+        if (reviewFlagsJson == null || reviewFlagsJson.isBlank()) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(reviewFlagsJson, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return List.of();
         }
     }
 }

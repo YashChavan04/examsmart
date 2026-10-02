@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../api/client';
+import BulkQuestionImporter from '../../components/BulkQuestionImporter';
 
 // Pre-curated subject packs that faculty can load in 1 click
 const CURATED_PACKS = {
@@ -261,11 +262,25 @@ export default function CreateExamPage() {
   const [successMsg, setSuccessMsg] = useState(null);
 
   // Bulk Importer State
+  const [bulkMethod, setBulkMethod] = useState('spreadsheet'); // 'spreadsheet' | 'packs' | 'text'
   const [bulkText, setBulkText] = useState(SAMPLE_BULK_TEXT);
   const [bulkSubject, setBulkSubject] = useState('Computer Science');
   const [parsedPreview, setParsedPreview] = useState([]);
   const [importingBulk, setImportingBulk] = useState(false);
   const [packLoading, setPackLoading] = useState(null);
+
+  async function handleFileImportSuccess(created) {
+    try {
+      const refreshed = await api.listTemplates();
+      setTemplates(refreshed || []);
+      const newIds = created.map((q) => q.id);
+      setSelectedTemplateIds((prev) => Array.from(new Set([...prev, ...newIds])));
+      setSuccessMsg(`Successfully imported ${created.length} question templates from file! They have been automatically selected for your new exam.`);
+      setActiveTab('create');
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   // Single Template Builder State
   const [builderType, setBuilderType] = useState('MCQ'); // 'MCQ' | 'EXPRESSION'
@@ -625,9 +640,10 @@ export default function CreateExamPage() {
         <div>
           {/* Quick-Action Speed Bar */}
           <div className="card" style={{
-            padding: '14px 18px',
-            marginBottom: 16,
-            background: 'linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, var(--card)), var(--card))',
+            padding: '16px 20px',
+            marginBottom: 18,
+            background: '#ffffff',
+            border: '1px solid var(--border)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -914,111 +930,205 @@ export default function CreateExamPage() {
       {/* TAB 2: BULK IMPORTER & PRE-MADE PACKS */}
       {activeTab === 'bulk' && (
         <div>
-          {/* 1-Click Curated Packs Section */}
-          <div className="card" style={{ padding: 22, marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 6px', fontSize: 18 }}>🚀 1-Click Curated Question Packs</h3>
-            <p className="muted" style={{ margin: '0 0 16px', fontSize: 13 }}>
-              Instantly import pre-built, verified questions with answer keys across popular engineering and testing domains:
-            </p>
+          {/* Sub-Navigation for Bulk Import Options */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              marginBottom: 18,
+              padding: '6px',
+              background: 'var(--card)',
+              borderRadius: 10,
+              border: '1px solid var(--border)',
+              width: 'fit-content',
+              flexWrap: 'wrap',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setBulkMethod('spreadsheet')}
+              style={{
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                borderRadius: 8,
+                border: bulkMethod === 'spreadsheet' ? '1.5px solid var(--accent2)' : 'none',
+                background: bulkMethod === 'spreadsheet' ? 'var(--accent2)' : 'transparent',
+                color: bulkMethod === 'spreadsheet' ? '#fff' : 'var(--text)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>📊</span>
+              <span>CSV &amp; Excel Import (Recommended)</span>
+            </button>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
-              {Object.entries(CURATED_PACKS).map(([key, pack]) => (
-                <div
-                  key={key}
-                  style={{
-                    border: '1px solid var(--border)',
-                    borderRadius: 10,
-                    padding: 16,
-                    background: 'var(--card)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: 'var(--shadow-sm)'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <span style={{ fontSize: 24 }}>{pack.icon}</span>
-                      <div>
-                        <strong style={{ fontSize: 15 }}>{pack.name}</strong>
-                        <div className="muted" style={{ fontSize: 11 }}>{pack.subject} &middot; {pack.questions.length} Questions</div>
-                      </div>
-                    </div>
-                    <ul style={{ margin: '8px 0 14px', paddingLeft: 18, fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>
-                      {pack.questions.map((q, idx) => (
-                        <li key={idx}><strong>{q.topic}:</strong> {q.templateText.slice(0, 45)}…</li>
-                      ))}
-                    </ul>
-                  </div>
+            <button
+              type="button"
+              onClick={() => setBulkMethod('packs')}
+              style={{
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                borderRadius: 8,
+                border: bulkMethod === 'packs' ? '1.5px solid var(--accent)' : 'none',
+                background: bulkMethod === 'packs' ? 'var(--accent)' : 'transparent',
+                color: bulkMethod === 'packs' ? '#fff' : 'var(--text)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>🚀</span>
+              <span>1-Click Curated Packs</span>
+            </button>
 
-                  <button
-                    type="button"
-                    className="primary"
-                    disabled={packLoading !== null}
-                    onClick={() => handleImportCuratedPack(key)}
-                    style={{ fontSize: 13, width: '100%', padding: '8px 12px' }}
-                  >
-                    {packLoading === key ? 'Importing…' : `+ Import ${pack.name} (+${pack.questions.length})`}
-                  </button>
-                </div>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setBulkMethod('text')}
+              style={{
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                borderRadius: 8,
+                border: bulkMethod === 'text' ? '1.5px solid var(--accent)' : 'none',
+                background: bulkMethod === 'text' ? 'var(--accent)' : 'transparent',
+                color: bulkMethod === 'text' ? '#fff' : 'var(--text)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <span>📝</span>
+              <span>Fast Text Q&amp;A Importer</span>
+            </button>
           </div>
 
-          {/* Paste Text / Q&A Bulk Importer */}
-          <div className="card" style={{ padding: 22 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-              <div>
-                <h3 style={{ margin: '0 0 4px', fontSize: 18 }}>📝 Fast Text Q&A Importer</h3>
-                <span className="muted" style={{ fontSize: 13 }}>
-                  Paste questions formatted as Question / A, B, C, D / Answer. You can import 10, 20, or 50 questions at once!
-                </span>
-              </div>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => setBulkText(SAMPLE_BULK_TEXT)}
-                style={{ fontSize: 12 }}
-              >
-                📋 Load Example Questions
-              </button>
-            </div>
-
-            <div style={{ marginBottom: 12 }}>
-              <label className="field-label">Default Subject</label>
-              <input
-                className="input"
-                style={{ maxWidth: 300 }}
-                value={bulkSubject}
-                onChange={(e) => setBulkSubject(e.target.value)}
-                placeholder="e.g. Computer Science, Mathematics"
-              />
-            </div>
-
-            <textarea
-              className="input"
-              rows={12}
-              value={bulkText}
-              onChange={(e) => setBulkText(e.target.value)}
-              placeholder="Paste formatted questions here..."
-              style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.5 }}
+          {/* METHOD 1: CSV / EXCEL SPREADSHEET IMPORTER */}
+          {bulkMethod === 'spreadsheet' && (
+            <BulkQuestionImporter
+              defaultSubject={form.subject || 'Computer Science'}
+              onImportSuccess={handleFileImportSuccess}
             />
+          )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, flexWrap: 'wrap', gap: 10 }}>
-              <span className="muted" style={{ fontSize: 12 }}>
-                Format: <code>Question: ... \n A: ... \n B: ... \n C: ... \n D: ... \n Answer: A</code>
-              </span>
-              <button
-                type="button"
-                className="primary"
-                onClick={handleExecuteBulkImport}
-                disabled={importingBulk || !bulkText.trim()}
-                style={{ padding: '9px 20px', background: 'var(--accent2)', color: '#fff', fontWeight: 600 }}
-              >
-                {importingBulk ? 'Parsing & Saving…' : '⚡ Parse & Import All Questions'}
-              </button>
+          {/* METHOD 2: 1-CLICK CURATED PACKS */}
+          {bulkMethod === 'packs' && (
+            <div className="card" style={{ padding: 22 }}>
+              <h3 style={{ margin: '0 0 6px', fontSize: 18 }}>🚀 1-Click Curated Question Packs</h3>
+              <p className="muted" style={{ margin: '0 0 16px', fontSize: 13 }}>
+                Instantly import pre-built, verified questions with answer keys across popular engineering and testing domains:
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
+                {Object.entries(CURATED_PACKS).map(([key, pack]) => (
+                  <div
+                    key={key}
+                    style={{
+                      border: '1px solid var(--border)',
+                      borderRadius: 10,
+                      padding: 16,
+                      background: 'var(--card)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 24 }}>{pack.icon}</span>
+                        <div>
+                          <strong style={{ fontSize: 15 }}>{pack.name}</strong>
+                          <div className="muted" style={{ fontSize: 11 }}>
+                            {pack.subject} &middot; {pack.questions.length} Questions
+                          </div>
+                        </div>
+                      </div>
+                      <ul style={{ margin: '8px 0 14px', paddingLeft: 18, fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>
+                        {pack.questions.map((q, idx) => (
+                          <li key={idx}>
+                            <strong>{q.topic}:</strong> {q.templateText.slice(0, 45)}…
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="primary"
+                      disabled={packLoading !== null}
+                      onClick={() => handleImportCuratedPack(key)}
+                      style={{ fontSize: 13, width: '100%', padding: '8px 12px' }}
+                    >
+                      {packLoading === key ? 'Importing…' : `+ Import ${pack.name} (+${pack.questions.length})`}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* METHOD 3: PASTE TEXT / Q&A BULK IMPORTER */}
+          {bulkMethod === 'text' && (
+            <div className="card" style={{ padding: 22 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <h3 style={{ margin: '0 0 4px', fontSize: 18 }}>📝 Fast Text Q&amp;A Importer</h3>
+                  <span className="muted" style={{ fontSize: 13 }}>
+                    Paste questions formatted as Question / A, B, C, D / Answer. You can import 10, 20, or 50 questions at once!
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setBulkText(SAMPLE_BULK_TEXT)}
+                  style={{ fontSize: 12 }}
+                >
+                  📋 Load Example Questions
+                </button>
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label className="field-label">Default Subject</label>
+                <input
+                  className="input"
+                  style={{ maxWidth: 300 }}
+                  value={bulkSubject}
+                  onChange={(e) => setBulkSubject(e.target.value)}
+                  placeholder="e.g. Computer Science, Mathematics"
+                />
+              </div>
+
+              <textarea
+                className="input"
+                rows={12}
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                placeholder="Paste formatted questions here..."
+                style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.5 }}
+              />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, flexWrap: 'wrap', gap: 10 }}>
+                <span className="muted" style={{ fontSize: 12 }}>
+                  Format: <code>Question: ... \n A: ... \n B: ... \n C: ... \n D: ... \n Answer: A</code>
+                </span>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleExecuteBulkImport}
+                  disabled={importingBulk || !bulkText.trim()}
+                  style={{ padding: '9px 20px', background: 'var(--accent2)', color: '#fff', fontWeight: 600 }}
+                >
+                  {importingBulk ? 'Parsing & Saving…' : '⚡ Parse & Import All Questions'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

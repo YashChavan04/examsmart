@@ -13,5 +13,6 @@ public record AttemptDetailsResponse(
         String status,
         List<QuestionResponseDTO> questions,
         Map<String, Integer> savedAnswers,
-        long flagCount
+        long flagCount,
+        List<String> reviewFlags
 ) {}

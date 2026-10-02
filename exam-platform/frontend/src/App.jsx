@@ -51,39 +51,36 @@ export default function App() {
       {!isExamActive && (
         <header>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Link to="/" style={{ textDecoration: 'none', color: '#fff' }}>
-              <h1 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+            <Link to="/" className="brand-logo">
+              <div className="brand-icon-box">
                 <span>📝</span>
-                <span>ExamSmart</span>
-              </h1>
+              </div>
+              <div>
+                <h1 className="brand-title">ExamSmart</h1>
+              </div>
             </Link>
-            <span style={{
-              fontSize: 11,
-              background: 'rgba(255,255,255,0.15)',
-              padding: '2px 8px',
-              borderRadius: 12,
-              letterSpacing: 0.5,
-              fontWeight: 600
-            }}>
-              v2.0
+            <span className="brand-badge">
+              v2.5 PRO
             </span>
           </div>
 
-          <nav className="tabs" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <nav className="tabs">
             {isAuthenticated ? (
               <>
                 <Link
                   to="/student"
                   className={currentPath.startsWith('/student') ? 'active' : ''}
                 >
-                  Student Portal
+                  <span>🎓</span>
+                  <span>Student Portal</span>
                 </Link>
                 {isFaculty && (
                   <Link
                     to="/faculty"
                     className={currentPath.startsWith('/faculty') ? 'active' : ''}
                   >
-                    Faculty Portal
+                    <span>👩‍🏫</span>
+                    <span>Faculty Portal</span>
                   </Link>
                 )}
               </>
@@ -97,15 +94,47 @@ export default function App() {
             )}
           </nav>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: 13 }}>
-                  <span style={{ fontWeight: 600, color: '#fff' }}>{user?.name}</span>
-                  <span style={{ fontSize: 11, color: isFaculty ? '#93c5fd' : '#86efac', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    {user?.role}
-                  </span>
+                {/* User Avatar Chip */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: isFaculty
+                        ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                        : 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    {user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'}
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', fontSize: 13 }}>
+                    <span style={{ fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>{user?.name}</span>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        color: isFaculty ? '#1d4ed8' : '#047857',
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.6,
+                      }}
+                    >
+                      {user?.role}
+                    </span>
+                  </div>
                 </div>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -114,11 +143,10 @@ export default function App() {
                   }}
                   className="secondary"
                   style={{
-                    fontSize: 12,
-                    padding: '6px 12px',
-                    borderColor: 'rgba(255,255,255,0.2)',
-                    color: '#e2e8f0',
-                    background: 'rgba(255,255,255,0.06)'
+                    fontSize: 12.5,
+                    padding: '6px 14px',
+                    borderRadius: 7,
+                    fontWeight: 600,
                   }}
                 >
                   Log Out
@@ -128,7 +156,7 @@ export default function App() {
               <Link
                 to="/login"
                 className="primary"
-                style={{ fontSize: 13, padding: '7px 16px', textDecoration: 'none' }}
+                style={{ fontSize: 13, padding: '8px 18px', textDecoration: 'none' }}
               >
                 Sign In / Register
               </Link>

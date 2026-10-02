@@ -1,0 +1,9 @@
+Question,Option A,Option B,Option C,Option D,Correct Answer,Subject,Topic,Difficulty
+What is the time complexity of searching in a balanced Binary Search Tree (BST)?,O(log n),O(n),O(n log n),O(1),A,Computer Science,Data Structures,MEDIUM
+Which HTTP method is idempotent according to RFC 7231?,POST,PUT,PATCH,CONNECT,B,Computer Science,Web Engineering,EASY
+In relational databases which normal form eliminates transitive functional dependencies?,First Normal Form (1NF),Second Normal Form (2NF),Third Normal Form (3NF),Boyce-Codd Normal Form (BCNF),C,Computer Science,Database Systems,HARD
+What does ACID stand for in transaction processing?,Atomicity Consistency Isolation Durability,Accuracy Completeness Integrity Dependability,Allocation Concurrency Indexing Delivery,Authentication Cryptography Identity Directory,A,Computer Science,Database Systems,EASY
+Which protocol operates at the Transport layer of the OSI model?,IP,TCP,HTTP,Ethernet,B,Computer Science,Computer Networks,MEDIUM
+What is the primary difference between a process and a thread?,Threads have separate address spaces,Threads within a process share the same address space,Processes cannot communicate with each other,Threads cannot run concurrently,B,Computer Science,Operating Systems,MEDIUM
+Which sorting algorithm has the best worst-case time complexity?,Quick Sort,Merge Sort,Bubble Sort,Insertion Sort,B,Computer Science,Algorithms,EASY
+In public-key cryptography what key is used to decrypt a message encrypted with a public key?,The sender's public key,The recipient's private key,The recipient's public key,The symmetric session key,B,Computer Science,Cybersecurity,HARD

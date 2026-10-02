@@ -37,4 +37,7 @@ public class ExamAttempt {
 
     @Column(name = "total_questions")
     private Integer totalQuestions;
+
+    @Column(name = "review_flags_json", columnDefinition = "TEXT")
+    private String reviewFlagsJson = "[]";
 }
